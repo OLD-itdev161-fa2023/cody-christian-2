@@ -2,6 +2,8 @@ import express from 'express';
 import connectDatabase from './config/db';
 import { check, validationResult } from 'express-validator';
 import cors from 'cors';
+import User from './models/User';
+import bcrypt from 'bcryptjs';
 
 //Initialize App
 const app = express();
@@ -43,12 +45,37 @@ app.post(
         check('password', "Please enter a password with 6 or more characters")
         .isLength({ min: 6})
     ],
-    (req, res) => {
+    async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         } else {
-            return res.send(req.body);
+            const {name, email, password} = req.body;
+            try {
+                //check if user exists
+                let user = await User.findOne({ email: email});
+                if ( user ){
+                    return res
+                        .status(400)
+                        .json({ errors: [{ msg: 'User already exists' }] });
+                }
+
+                user = new User({
+                    name: name,
+                    email: email,
+                    password: password
+                });
+
+                //Encrypt
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(password, salt);
+
+                //save to db
+                await user.save();
+                res.send('User successfully registered');
+            } catch (error) {
+                res.status(500).send('Server Error');
+            }
         }
     }
 );
