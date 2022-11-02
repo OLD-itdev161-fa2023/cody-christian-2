@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const Register = () => {
-// eslint-disable-next-line no-undef
 const [userData, setUserData] = useState({
     name: "",
     email: "",
