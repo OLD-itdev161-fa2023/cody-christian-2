@@ -50,16 +50,16 @@ const registerUser = async () => {
         // Store user data and redirect
         localStorage.setItem('token', res.data.token);
         history.push('/');
-      } catch (error) {
+    } catch (error) {
         // Clear user data and set errors
         localStorage.removeItem('token');
         
         setErrorData({
-          ...errors,
-          errors: error.response.data.errors
+        ...errors,
+        errors: error.response.data.errors
         })
-      }
-      authenticateUser();
+    }
+    authenticateUser();
 };
 
 return (
