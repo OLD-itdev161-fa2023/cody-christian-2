@@ -1,15 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useHistory } from "react-router-dom";
 
-const Register = () => {
-const [userData, setUserData] = useState({
+const Register = ({ authenticateUser }) => {
+    let history = useHistory();
+    const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
     passwordConfirm: "",
 });
+const [errorData, setErrorData] = useState({ errors: null});
 
 const { name, email, password, passwordConfirm } = userData;
+const {errors} = errorData;
 
 const onChange = (e) => {
     const { name, value } = e.target;
@@ -19,9 +23,9 @@ const onChange = (e) => {
     });
 };
 
-const register = async () => {
+const registerUser = async () => {
     if (password !== passwordConfirm) {
-    console.log("Passwords do not match");
+        console.log("Passwords do not match");
     } else {
     const newUser = {
         name: name,
@@ -42,12 +46,20 @@ const register = async () => {
         body,
         config
         );
-        console.log(res.data);
-    } catch (error) {
-        console.error(error.response.data);
-        return;
-    }
-    }
+
+        // Store user data and redirect
+        localStorage.setItem('token', res.data.token);
+        history.push('/');
+      } catch (error) {
+        // Clear user data and set errors
+        localStorage.removeItem('token');
+        
+        setErrorData({
+          ...errors,
+          errors: error.response.data.errors
+        })
+      }
+      authenticateUser();
 };
 
 return (
@@ -90,10 +102,12 @@ return (
         />
     </div>
     <div>
-        <button onClick={() => register()}>Register</button>
+        <button onClick={() => registerUser()}>Register</button>
     </div>
+    {errors ** errors.map(error =>
+        <div key={error.msg}>{error.msg}</div>)}
     </div>
 );
 };
-
+}
 export default Register;
